@@ -1,0 +1,32 @@
+{
+  "dataset_id": "uci-student-performance-math-v1",
+  "technique": "mlp",
+  "title": "Student Performance — Mathematics Course",
+  "provider": "UCI Machine Learning Repository",
+  "source_url": "https://archive.ics.uci.edu/dataset/320/student+performance",
+  "doi": "10.24432/C5TG7T",
+  "license": "CC BY 4.0",
+  "retrieved_on": "2026-10-15",
+  "source_sha256": "82ae9d66437b9808df42e8c89d2bb179c46e9cfbcf06f38abc1d20b3b747e177",
+  "snapshot_path": "midterm/data/raw/student-mat.csv",
+  "snapshot_sha256": "e47f9ee225e1ee6e69b7564e6dac7123e80b8486677fe111f351964cef5dec80",
+  "schema": {
+    "format": "CSV separado por punto y coma",
+    "columns": {
+      "G1": {"type": "integer", "units": "nota 0–20", "nullable": false},
+      "G2": {"type": "integer", "units": "nota 0–20", "nullable": false},
+      "G3": {"type": "integer", "units": "nota 0–20", "nullable": false}
+    },
+    "rows": 395
+  },
+  "transformations": [
+    "Conservar el archivo de Matemática distribuido por UCI.",
+    "Normalizar únicamente G1 y G2 dividiendo entre 20.",
+    "Derivar y=1 si G3 >= 10; G3 nunca se usa como entrada.",
+    "Crear partición estratificada 80/20 con semilla 42."
+  ],
+  "limitations": [
+    "G1 y G2 están fuertemente correlacionadas con G3.",
+    "Una actualización didáctica no evalúa calidad predictiva ni generaliza a estudiantes de UNMSM."
+  ]
+}

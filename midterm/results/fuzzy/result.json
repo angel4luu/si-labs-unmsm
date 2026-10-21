@@ -1,0 +1,315 @@
+{
+  "artifacts": [
+    {
+      "media_type": "image/png",
+      "path": "memberships.png",
+      "purpose": "funciones de membresía",
+      "sha256": "353bb76312b891a9dac137d65b3779dd266bbe13b96276c18291b5439e1ca676"
+    },
+    {
+      "media_type": "image/png",
+      "path": "aggregation.png",
+      "purpose": "agregación y centroide",
+      "sha256": "928b5e59c1bc021c5c9ffe5d13d5f132f5f5efa4180036a18ff0795629592c5e"
+    }
+  ],
+  "citations": [
+    {
+      "label": "NASA POWER Daily API",
+      "license": "NASA Open Data / CC0",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M&community=RE&longitude=-77.08&latitude=-12.06&start=20240101&end=20241231&format=JSON&time-standard=LST"
+    },
+    {
+      "label": "NASA POWER Referencing",
+      "license": "NASA Open Data",
+      "url": "https://power.larc.nasa.gov/docs/referencing/"
+    }
+  ],
+  "dataset": {
+    "dataset_id": "nasa-power-t2m-unmsm-2024-v1",
+    "metadata_path": "midterm/data/metadata/fuzzy.json",
+    "snapshot_sha256": "d4b371d7b5a24e94d4802e93547478297f82f3ccceb55282077c12b9db315691"
+  },
+  "execution": {
+    "command": "run_exercise(data, metadata, config, output_dir, seed)",
+    "config_sha256": "6e0d94d00fcb4ce97e806b7add4253a56a26e7c9574d17d1c84224a62f46e35a",
+    "input_sha256": "d4b371d7b5a24e94d4802e93547478297f82f3ccceb55282077c12b9db315691",
+    "seed": 0
+  },
+  "limitations": [
+    "T2M es temperatura exterior de una celda modelada y no un sensor de aula.",
+    "El porcentaje de ventilador es una política diseñada, no una variable objetivo de NASA."
+  ],
+  "pdf_mapping": [
+    {
+      "justification": "Se usa una observación real de NASA POWER.",
+      "original_value": "28 °C",
+      "pdf_element": "temperatura_entrada",
+      "replacement": "19.40 °C el 2024-05-14",
+      "treatment": "replaced"
+    },
+    {
+      "justification": "Se adopta el rango empírico anual de la ubicación.",
+      "original_value": "0–40 °C",
+      "pdf_element": "universo_temperatura",
+      "replacement": "16.09–22.39 °C",
+      "treatment": "replaced"
+    },
+    {
+      "justification": "Los puntos provienen de la distribución real.",
+      "original_value": "conjuntos fijos del enunciado",
+      "pdf_element": "membresias_temperatura",
+      "replacement": "trapecios/triángulo derivados de mínimo, cuartiles y máximo",
+      "treatment": "replaced"
+    },
+    {
+      "justification": "Conserva el procedimiento Mamdani solicitado.",
+      "original_value": "lento/moderado/rápido en 0–100",
+      "pdf_element": "salida_y_reglas",
+      "replacement": "mismos conjuntos y tres reglas",
+      "treatment": "retained"
+    },
+    {
+      "justification": "Son las etapas teóricas evaluadas.",
+      "original_value": "mínimo, máximo y centroide",
+      "pdf_element": "operadores",
+      "replacement": "mínimo, máximo y centroide numérico",
+      "treatment": "retained"
+    }
+  ],
+  "schema_version": "1.0",
+  "stages": [
+    {
+      "code_objects": [
+        "PowerDataset"
+      ],
+      "inputs": {
+        "observations": 366
+      },
+      "operation": "Validar T2M 2024 y excluir el centinela -999.",
+      "outputs": {
+        "min_q1_median_q3_max_c": [
+          16.09,
+          17.86,
+          18.685,
+          20.0875,
+          22.39
+        ],
+        "selected_date": "2024-05-14",
+        "temperature_c": 19.4
+      },
+      "stage_id": "preprocess",
+      "title_es": "Preparación de temperatura"
+    },
+    {
+      "code_objects": [
+        "MembershipFunction",
+        "FuzzyVariable"
+      ],
+      "inputs": {
+        "empirical_points_c": [
+          16.09,
+          17.86,
+          18.685,
+          20.0875,
+          22.39
+        ]
+      },
+      "operation": "Construir hombros trapezoidales bajo/alto y triángulo medio desde mínimo, cuartiles y máximo.",
+      "outputs": {
+        "input_sets": {
+          "high": {
+            "points": [
+              18.685,
+              20.0875,
+              22.39,
+              22.39
+            ],
+            "shape": "trapezoid"
+          },
+          "low": {
+            "points": [
+              16.09,
+              16.09,
+              17.86,
+              18.685
+            ],
+            "shape": "trapezoid"
+          },
+          "medium": {
+            "points": [
+              17.86,
+              18.685,
+              20.0875
+            ],
+            "shape": "triangle"
+          }
+        },
+        "output_sets": {
+          "fast": {
+            "points": [
+              60,
+              80,
+              100
+            ],
+            "shape": "triangle"
+          },
+          "moderate": {
+            "points": [
+              30,
+              50,
+              70
+            ],
+            "shape": "triangle"
+          },
+          "slow": {
+            "points": [
+              0,
+              20,
+              40
+            ],
+            "shape": "triangle"
+          }
+        }
+      },
+      "stage_id": "memberships",
+      "title_es": "Construcción de membresías"
+    },
+    {
+      "code_objects": [
+        "FuzzyVariable",
+        "MembershipFunction"
+      ],
+      "inputs": {
+        "temperature_c": 19.4
+      },
+      "operation": "Evaluar μ_baja, μ_media y μ_alta en la observación real.",
+      "outputs": {
+        "memberships": {
+          "high": 0.5098039215686274,
+          "low": 0.0,
+          "medium": 0.4901960784313726
+        }
+      },
+      "stage_id": "fuzzification",
+      "title_es": "Fusificación"
+    },
+    {
+      "code_objects": [
+        "MamdaniRule",
+        "MamdaniController"
+      ],
+      "inputs": {
+        "memberships": {
+          "high": 0.5098039215686274,
+          "low": 0.0,
+          "medium": 0.4901960784313726
+        },
+        "rules": [
+          {
+            "if": "low",
+            "then": "slow"
+          },
+          {
+            "if": "medium",
+            "then": "moderate"
+          },
+          {
+            "if": "high",
+            "then": "fast"
+          }
+        ]
+      },
+      "operation": "Activar bajo→lento, medio→moderado y alto→rápido.",
+      "outputs": {
+        "activations": {
+          "high->fast": 0.5098039215686274,
+          "low->slow": 0.0,
+          "medium->moderate": 0.4901960784313726
+        }
+      },
+      "stage_id": "rule-evaluation",
+      "title_es": "Evaluación de reglas"
+    },
+    {
+      "code_objects": [
+        "MamdaniController"
+      ],
+      "inputs": {
+        "activations": {
+          "high->fast": 0.5098039215686274,
+          "low->slow": 0.0,
+          "medium->moderate": 0.4901960784313726
+        }
+      },
+      "operation": "Recortar cada conjunto consecuente con min(activación, μ_salida).",
+      "outputs": {
+        "peak_memberships": {
+          "fast": 0.5098039215686274,
+          "moderate": 0.4901960784313726,
+          "slow": 0.0
+        }
+      },
+      "stage_id": "implication",
+      "title_es": "Implicación por mínimo"
+    },
+    {
+      "code_objects": [
+        "MamdaniController",
+        "InferenceTrace"
+      ],
+      "inputs": {
+        "implicated_sets": [
+          "slow",
+          "moderate",
+          "fast"
+        ]
+      },
+      "operation": "Combinar los consecuentes punto a punto mediante máximo.",
+      "outputs": {
+        "maximum_membership": 0.5098039215686274,
+        "nonzero_points": 6999
+      },
+      "stage_id": "aggregation",
+      "title_es": "Agregación por máximo"
+    },
+    {
+      "code_objects": [
+        "MamdaniController",
+        "InferenceTrace"
+      ],
+      "inputs": {
+        "step": 0.01
+      },
+      "operation": "Calcular Σ(y·μ_agregada(y))/Σμ_agregada(y) sobre 0–100.",
+      "outputs": {
+        "crisp_percent": 65.20463096238352,
+        "denominator": 2874.615294117647,
+        "numerator": 187438.2294117647
+      },
+      "stage_id": "centroid",
+      "title_es": "Desdifusificación por centroide"
+    },
+    {
+      "code_objects": [
+        "InferenceTrace"
+      ],
+      "inputs": {
+        "crisp_percent": 65.20463096238352
+      },
+      "operation": "Interpretar el centroide como comando porcentual diseñado para el ventilador.",
+      "outputs": {
+        "command": "ventilación media-alta",
+        "temperature_context": "media diaria exterior"
+      },
+      "stage_id": "interpretation",
+      "title_es": "Interpretación"
+    }
+  ],
+  "summary": {
+    "conclusion_es": "Para 19.40 °C, el centroide Mamdani ordena 65.204631% de ventilación.",
+    "primary_value": 65.20463096238352,
+    "units": "% de comando del ventilador"
+  },
+  "technique": "fuzzy"
+}

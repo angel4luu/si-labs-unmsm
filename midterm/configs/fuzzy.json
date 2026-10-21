@@ -1,0 +1,38 @@
+{
+  "config_version": "1.0",
+  "technique": "fuzzy",
+  "seed": 0,
+  "dataset_metadata": "midterm/data/metadata/fuzzy.json",
+  "algorithm": {
+    "selected_date": "2024-05-14",
+    "empirical_points_c": [16.09, 17.86, 18.685, 20.0875, 22.39],
+    "input_universe_c": [16.09, 22.39],
+    "input_sets": {
+      "low": {"shape": "trapezoid", "points": [16.09, 16.09, 17.86, 18.685]},
+      "medium": {"shape": "triangle", "points": [17.86, 18.685, 20.0875]},
+      "high": {"shape": "trapezoid", "points": [18.685, 20.0875, 22.39, 22.39]}
+    },
+    "output_universe_percent": [0, 100],
+    "output_sets": {
+      "slow": {"shape": "triangle", "points": [0, 20, 40]},
+      "moderate": {"shape": "triangle", "points": [30, 50, 70]},
+      "fast": {"shape": "triangle", "points": [60, 80, 100]}
+    },
+    "rules": [
+      {"if": "low", "then": "slow"},
+      {"if": "medium", "then": "moderate"},
+      {"if": "high", "then": "fast"}
+    ],
+    "implication": "minimum",
+    "aggregation": "maximum",
+    "centroid_step": 0.01
+  },
+  "presentation_case": {"date": "2024-05-14", "temperature_c": 19.4},
+  "pdf_mapping": [
+    {"pdf_element": "temperatura_entrada", "original_value": "28 °C", "treatment": "replaced", "replacement": "19.40 °C el 2024-05-14", "justification": "Se usa una observación real de NASA POWER."},
+    {"pdf_element": "universo_temperatura", "original_value": "0–40 °C", "treatment": "replaced", "replacement": "16.09–22.39 °C", "justification": "Se adopta el rango empírico anual de la ubicación."},
+    {"pdf_element": "membresias_temperatura", "original_value": "conjuntos fijos del enunciado", "treatment": "replaced", "replacement": "trapecios/triángulo derivados de mínimo, cuartiles y máximo", "justification": "Los puntos provienen de la distribución real."},
+    {"pdf_element": "salida_y_reglas", "original_value": "lento/moderado/rápido en 0–100", "treatment": "retained", "replacement": "mismos conjuntos y tres reglas", "justification": "Conserva el procedimiento Mamdani solicitado."},
+    {"pdf_element": "operadores", "original_value": "mínimo, máximo y centroide", "treatment": "retained", "replacement": "mínimo, máximo y centroide numérico", "justification": "Son las etapas teóricas evaluadas."}
+  ]
+}

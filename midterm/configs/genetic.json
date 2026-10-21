@@ -1,0 +1,27 @@
+{
+  "config_version": "1.0",
+  "technique": "genetic",
+  "seed": 1,
+  "dataset_metadata": "midterm/data/metadata/genetic.json",
+  "algorithm": {
+    "bits": 5,
+    "lower_bound": 0,
+    "upper_bound": 31,
+    "initial_population": [4, 11, 14, 25],
+    "tournament_pairs": [[4, 25], [11, 14]],
+    "tournament_size": 2,
+    "crossover_point": 3,
+    "mutation_probability": 0.05,
+    "elite_count": 2,
+    "generations": 1,
+    "fitness": "1 / (1 + mean(abs(x - demand_dozens)))"
+  },
+  "presentation_case": {"stock_code": "85123A", "decision_units": "docenas por día"},
+  "pdf_mapping": [
+    {"pdf_element": "variable_entera", "original_value": "cantidad a producir", "treatment": "retained", "replacement": "lote diario en docenas", "justification": "Se conserva una decisión entera de producción."},
+    {"pdf_element": "funcion_objetivo", "original_value": "x(15-x)", "treatment": "replaced", "replacement": "1/(1+MAE(x, demanda_real))", "justification": "El dataset no contiene costos; la cercanía a demanda sí es observable."},
+    {"pdf_element": "rango_codificacion", "original_value": "0–15, 4 bits", "treatment": "replaced", "replacement": "0–31, 5 bits", "justification": "El máximo de 28 docenas requiere cinco bits."},
+    {"pdf_element": "probabilidad_mutacion", "original_value": 0.05, "treatment": "retained", "replacement": 0.05, "justification": "Es compatible con la codificación binaria didáctica."},
+    {"pdf_element": "etapas_primera_generacion", "original_value": "aptitud, selección, cruce, mutación y comparación", "treatment": "retained", "replacement": "traza completa", "justification": "Son las etapas evaluadas en el enunciado."}
+  ]
+}

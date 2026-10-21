@@ -1,0 +1,350 @@
+{
+  "artifacts": [
+    {
+      "media_type": "image/png",
+      "path": "network_update.png",
+      "purpose": "red y cambio de predicción",
+      "sha256": "f1d6f6db4fe8a3336eb4451426b44779ce36acddd63d6f20b81c9dd039023825"
+    },
+    {
+      "media_type": "text/csv",
+      "path": "parameter_update.csv",
+      "purpose": "parámetros antes y después",
+      "sha256": "4a401e41f98ca2bd5c9c264f35735f12607eea8cd7310b0ac90960fdc8f18ef3"
+    }
+  ],
+  "citations": [
+    {
+      "label": "UCI Student Performance",
+      "license": "CC BY 4.0",
+      "url": "https://archive.ics.uci.edu/dataset/320/student+performance"
+    },
+    {
+      "label": "DOI 10.24432/C5TG7T",
+      "license": "CC BY 4.0",
+      "url": "https://doi.org/10.24432/C5TG7T"
+    }
+  ],
+  "dataset": {
+    "dataset_id": "uci-student-performance-math-v1",
+    "metadata_path": "midterm/data/metadata/mlp.json",
+    "snapshot_sha256": "e47f9ee225e1ee6e69b7564e6dac7123e80b8486677fe111f351964cef5dec80"
+  },
+  "execution": {
+    "command": "run_exercise(data, metadata, config, output_dir, seed)",
+    "config_sha256": "c28fe8915080fb11840369ccf1c4a5ad94bf800ab0fb119289b8f0879838f769",
+    "input_sha256": "e47f9ee225e1ee6e69b7564e6dac7123e80b8486677fe111f351964cef5dec80",
+    "seed": 42
+  },
+  "limitations": [
+    "G1 y G2 están fuertemente correlacionadas con G3.",
+    "Una actualización didáctica no evalúa calidad predictiva ni generaliza a estudiantes de UNMSM."
+  ],
+  "pdf_mapping": [
+    {
+      "justification": "Se usa la primera nota real normalizada.",
+      "original_value": 0.8,
+      "pdf_element": "entrada_asistencia",
+      "replacement": "G1/20 = 0.75",
+      "treatment": "replaced"
+    },
+    {
+      "justification": "Se usa la segunda nota real normalizada.",
+      "original_value": 0.6,
+      "pdf_element": "entrada_actividades",
+      "replacement": "G2/20 = 0.70",
+      "treatment": "replaced"
+    },
+    {
+      "justification": "La etiqueta se deriva del resultado real sin usarlo como entrada.",
+      "original_value": "aprobado",
+      "pdf_element": "clase_esperada",
+      "replacement": "G3=15 implica y=1",
+      "treatment": "replaced"
+    },
+    {
+      "justification": "Conserva la estructura solicitada.",
+      "original_value": "2-2-1 con sigmoide",
+      "pdf_element": "arquitectura_y_activacion",
+      "replacement": "2-2-1 con sigmoide",
+      "treatment": "retained"
+    },
+    {
+      "justification": "Se conserva para la actualización manual.",
+      "original_value": 0.2,
+      "pdf_element": "tasa_aprendizaje",
+      "replacement": 0.2,
+      "treatment": "retained"
+    },
+    {
+      "justification": "Permite reproducir propagación y retropropagación.",
+      "original_value": "pesos no completamente especificados",
+      "pdf_element": "inicializacion",
+      "replacement": "pesos y sesgos deterministas declarados",
+      "treatment": "replaced"
+    }
+  ],
+  "schema_version": "1.0",
+  "stages": [
+    {
+      "code_objects": [
+        "StudentDataset"
+      ],
+      "inputs": {
+        "features": [
+          "G1",
+          "G2"
+        ],
+        "rows": 395,
+        "seed": 42,
+        "target": "G3 >= 10"
+      },
+      "operation": "Derivar la clase sin usar G3 como entrada y estratificar 80/20.",
+      "outputs": {
+        "presentation_row_in_train": true,
+        "test_rows": 79,
+        "train_rows": 316
+      },
+      "stage_id": "preprocess-split",
+      "title_es": "Preparación y partición"
+    },
+    {
+      "code_objects": [
+        "GradeNormalizer",
+        "StudentDataset"
+      ],
+      "inputs": {
+        "G1": 15,
+        "G2": 14,
+        "G3": 15,
+        "source_row": 4
+      },
+      "operation": "Aplicar x1=G1/20, x2=G2/20 y y=1 si G3>=10.",
+      "outputs": {
+        "x": [
+          0.75,
+          0.7
+        ],
+        "y": 1.0
+      },
+      "stage_id": "sample-normalization",
+      "title_es": "Normalización de la muestra"
+    },
+    {
+      "code_objects": [
+        "DenseLayer",
+        "MLP221"
+      ],
+      "inputs": {
+        "architecture": [
+          2,
+          2,
+          1
+        ]
+      },
+      "operation": "Cargar pesos y sesgos deterministas para dos entradas, dos neuronas ocultas y una salida.",
+      "outputs": {
+        "hidden_biases": [
+          0.1,
+          -0.1
+        ],
+        "hidden_output_weights": [
+          0.3,
+          -0.2
+        ],
+        "input_hidden_weights": [
+          [
+            0.1,
+            0.2
+          ],
+          [
+            -0.1,
+            0.1
+          ]
+        ],
+        "output_bias": 0.05
+      },
+      "stage_id": "initialization",
+      "title_es": "Inicialización 2-2-1"
+    },
+    {
+      "code_objects": [
+        "DenseLayer",
+        "Sigmoid",
+        "MLP221"
+      ],
+      "inputs": {
+        "x": [
+          0.75,
+          0.7
+        ]
+      },
+      "operation": "Calcular z_h=W_hx+b_h, h=σ(z_h), z_o=W_oh+b_o y ŷ=σ(z_o).",
+      "outputs": {
+        "hidden_activation": [
+          0.5781052328843092,
+          0.4737740906279313
+        ],
+        "hidden_z": [
+          0.315,
+          -0.10500000000000001
+        ],
+        "output_z": 0.12867675173970647,
+        "prediction": 0.5321248739763836
+      },
+      "stage_id": "forward",
+      "title_es": "Propagación hacia adelante"
+    },
+    {
+      "code_objects": [
+        "BinaryCrossEntropy"
+      ],
+      "inputs": {
+        "prediction": 0.5321248739763836,
+        "target": 1.0
+      },
+      "operation": "Calcular entropía cruzada binaria −[y ln ŷ +(1−y) ln(1−ŷ)].",
+      "outputs": {
+        "binary_cross_entropy": 0.6308770916646993
+      },
+      "stage_id": "loss",
+      "title_es": "Pérdida"
+    },
+    {
+      "code_objects": [
+        "Sigmoid",
+        "MLP221"
+      ],
+      "inputs": {
+        "prediction": 0.5321248739763836,
+        "target": 1.0
+      },
+      "operation": "Propagar δ_o=ŷ−y y δ_h=(W_o δ_o)⊙h(1−h); formar gradientes externos.",
+      "outputs": {
+        "hidden_delta": [
+          -0.034234362979650226,
+          0.023329395555827224
+        ],
+        "hidden_weight_gradients": [
+          [
+            -0.02567577223473767,
+            -0.02396405408575516
+          ],
+          [
+            0.01749704666687042,
+            0.016330576889079056
+          ]
+        ],
+        "output_delta": -0.46787512602361636,
+        "output_weight_gradients": [
+          -0.27048105869065825,
+          -0.2216671123592676
+        ]
+      },
+      "stage_id": "backward",
+      "title_es": "Retropropagación"
+    },
+    {
+      "code_objects": [
+        "DenseLayer",
+        "MLP221",
+        "TrainingTrace"
+      ],
+      "inputs": {
+        "learning_rate": 0.2,
+        "parameters_before": {
+          "hidden_biases": [
+            0.1,
+            -0.1
+          ],
+          "hidden_output_weights": [
+            0.3,
+            -0.2
+          ],
+          "input_hidden_weights": [
+            [
+              0.1,
+              0.2
+            ],
+            [
+              -0.1,
+              0.1
+            ]
+          ],
+          "output_bias": 0.05
+        }
+      },
+      "operation": "Aplicar θ_nuevo=θ−η∇θ a pesos y sesgos.",
+      "outputs": {
+        "parameters_after": {
+          "hidden_biases": [
+            0.10684687259593005,
+            -0.10466587911116546
+          ],
+          "hidden_output_weights": [
+            0.35409621173813166,
+            -0.1556665775281465
+          ],
+          "input_hidden_weights": [
+            [
+              0.10513515444694754,
+              0.20479281081715103
+            ],
+            [
+              -0.10349940933337409,
+              0.0967338846221842
+            ]
+          ],
+          "output_bias": 0.14357502520472326
+        }
+      },
+      "stage_id": "update",
+      "title_es": "Actualización de parámetros"
+    },
+    {
+      "code_objects": [
+        "MLP221",
+        "BinaryCrossEntropy",
+        "TrainingTrace"
+      ],
+      "inputs": {
+        "parameters_after": {
+          "hidden_biases": [
+            0.10684687259593005,
+            -0.10466587911116546
+          ],
+          "hidden_output_weights": [
+            0.35409621173813166,
+            -0.1556665775281465
+          ],
+          "input_hidden_weights": [
+            [
+              0.10513515444694754,
+              0.20479281081715103
+            ],
+            [
+              -0.10349940933337409,
+              0.0967338846221842
+            ]
+          ],
+          "output_bias": 0.14357502520472326
+        }
+      },
+      "operation": "Repetir la propagación y comprobar el cambio de predicción y pérdida.",
+      "outputs": {
+        "loss_after": 0.5645903518628783,
+        "loss_before": 0.6308770916646993,
+        "prediction_after": 0.5685930221280981,
+        "prediction_before": 0.5321248739763836
+      },
+      "stage_id": "post-update-forward",
+      "title_es": "Verificación posterior"
+    }
+  ],
+  "summary": {
+    "conclusion_es": "Una actualización eleva ŷ de 0.532125 a 0.568593 y reduce BCE de 0.630877 a 0.564590.",
+    "primary_value": 0.5685930221280981,
+    "units": "probabilidad estimada de aprobar"
+  },
+  "technique": "mlp"
+}

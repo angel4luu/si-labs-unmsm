@@ -1,0 +1,30 @@
+{
+  "dataset_id": "nasa-power-t2m-unmsm-2024-v1",
+  "technique": "fuzzy",
+  "title": "NASA POWER Daily T2M Point Data",
+  "provider": "NASA Langley Research Center POWER Project",
+  "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M&community=RE&longitude=-77.08&latitude=-12.06&start=20240101&end=20241231&format=JSON&time-standard=LST",
+  "doi": null,
+  "license": "NASA Open Data / CC0",
+  "retrieved_on": "2026-10-15",
+  "source_sha256": "d4b371d7b5a24e94d4802e93547478297f82f3ccceb55282077c12b9db315691",
+  "snapshot_path": "midterm/data/raw/nasa_power_lima_2024.json",
+  "snapshot_sha256": "d4b371d7b5a24e94d4802e93547478297f82f3ccceb55282077c12b9db315691",
+  "schema": {
+    "format": "NASA POWER JSON Feature",
+    "keys": {
+      "geometry.coordinates": {"type": "array[number]", "units": "grados y metros", "nullable": false},
+      "properties.parameter.T2M": {"type": "object<string, number>", "units": "°C media diaria", "nullable": false}
+    },
+    "missing_sentinel": -999
+  },
+  "transformations": [
+    "Consultar T2M diario en tiempo solar local para (-12.06, -77.08) durante 2024.",
+    "Excluir el valor centinela -999 si apareciera.",
+    "Calcular mínimo, Q1, mediana, Q3 y máximo sobre 366 observaciones válidas."
+  ],
+  "limitations": [
+    "T2M es temperatura exterior de una celda modelada y no un sensor de aula.",
+    "El porcentaje de ventilador es una política diseñada, no una variable objetivo de NASA."
+  ]
+}

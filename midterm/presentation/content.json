@@ -1,0 +1,1077 @@
+{
+  "deck": {
+    "title": "Tres técnicas de Software Inteligente con datos reales",
+    "subtitle": "Algoritmos genéticos · Lógica difusa Mamdani · Red neuronal multicapa",
+    "author": "Angela Jara",
+    "course": "Software Inteligente — UNMSM",
+    "aspect_ratio": "16:9",
+    "language": "es",
+    "theme": {
+      "font": "Liberation Sans",
+      "code_font": "Liberation Mono",
+      "navy": "0F172A",
+      "blue": "0EA5E9",
+      "violet": "7C3AED",
+      "amber": "F59E0B"
+    },
+    "ai_disclosure": "Se utilizó asistencia de IA para planificación, programación, pruebas y redacción. La estudiante revisó los resultados y conserva la responsabilidad académica final."
+  },
+  "sections": [
+    {
+      "id": "genetic",
+      "title": "Algoritmo genético",
+      "duration_seconds": 180,
+      "theory_seconds": 100,
+      "code_seconds": 60,
+      "result_seconds": 20
+    },
+    {
+      "id": "fuzzy",
+      "title": "Lógica difusa Mamdani",
+      "duration_seconds": 180,
+      "theory_seconds": 100,
+      "code_seconds": 60,
+      "result_seconds": 20
+    },
+    {
+      "id": "mlp",
+      "title": "Red neuronal multicapa",
+      "duration_seconds": 180,
+      "theory_seconds": 100,
+      "code_seconds": 60,
+      "result_seconds": 20
+    }
+  ],
+  "slides": [
+    {
+      "id": "ga-overview",
+      "section": "genetic",
+      "layout": "overview",
+      "title": "P1 · Algoritmo genético — Panorama",
+      "intro_es": "Buscamos el lote diario de producción que mejor se ajusta a la demanda real de un producto.",
+      "family": {
+        "title": "Tipo de técnica",
+        "details": [
+          {
+            "text": "Metaheurística evolutiva de optimización."
+          },
+          {
+            "text": "Una población binaria mejora por selección, cruce y mutación."
+          }
+        ]
+      },
+      "dataset": {
+        "title": "Dataset",
+        "details": [
+          {
+            "text": "UCI Online Retail (CC BY 4.0)"
+          },
+          {
+            "template": "Producto 85123A · {days:.0f} días de ventas",
+            "values": {
+              "days": "stages.preprocess.outputs.observations"
+            }
+          },
+          {
+            "template": "Demanda diaria en docenas · mediana {median:.0f}",
+            "values": {
+              "median": "stages.preprocess.outputs.median_dozens"
+            }
+          }
+        ]
+      },
+      "pipeline": [
+        "Población",
+        "Aptitud",
+        "Torneo",
+        "Cruce",
+        "Mutación",
+        "Elitismo"
+      ],
+      "exam_rows": [
+        {
+          "label": "Función objetivo",
+          "mapping": 1
+        },
+        {
+          "label": "Rango y código",
+          "mapping": 2
+        },
+        {
+          "label": "Prob. mutación",
+          "mapping": 3
+        }
+      ],
+      "limitation_selector": "limitations.2",
+      "duration_seconds": 30,
+      "citations": [
+        "UCI Online Retail",
+        "DOI 10.24432/C5BW33"
+      ],
+      "narration_es": "La primera pregunta usa un algoritmo genético, una metaheurística evolutiva: una población binaria mejora mediante aptitud, torneo, cruce, mutación y elitismo. En lugar de la función sintética del examen, uso ventas diarias reales del producto 85123A de UCI Online Retail, en docenas. Por eso el objetivo pasa a ser uno entre uno más el error absoluto medio, y el rango sube a cero–treinta y uno con cinco bits."
+    },
+    {
+      "id": "ga-data",
+      "section": "genetic",
+      "layout": "contract",
+      "title": "GA — Componentes y configuración",
+      "intro_es": "Cada individuo es un lote entero codificado en cinco bits y evaluado contra la demanda observada.",
+      "blocks": [
+        {
+          "role": "problem",
+          "title": "Individuo",
+          "details": [
+            {
+              "text": "Lote x ∈ [0, 31] docenas"
+            },
+            {
+              "text": "Cromosoma de 5 bits"
+            }
+          ]
+        },
+        {
+          "role": "inputs",
+          "title": "Población inicial",
+          "details": [
+            {
+              "template": "{a} = {ab} · {b} = {bb}",
+              "values": {
+                "a": "stages.encode-decode.outputs.population.0.value",
+                "ab": "stages.encode-decode.outputs.population.0.bits",
+                "b": "stages.encode-decode.outputs.population.1.value",
+                "bb": "stages.encode-decode.outputs.population.1.bits"
+              }
+            },
+            {
+              "template": "{a} = {ab} · {b} = {bb}",
+              "values": {
+                "a": "stages.encode-decode.outputs.population.2.value",
+                "ab": "stages.encode-decode.outputs.population.2.bits",
+                "b": "stages.encode-decode.outputs.population.3.value",
+                "bb": "stages.encode-decode.outputs.population.3.bits"
+              }
+            }
+          ]
+        },
+        {
+          "role": "model",
+          "title": "Aptitud",
+          "details": [
+            {
+              "text": "MAE(x) = (1/n) Σ |dᵢ − x|"
+            },
+            {
+              "text": "f(x) = 1 / (1 + MAE(x))"
+            }
+          ]
+        },
+        {
+          "role": "parameters",
+          "title": "Operadores",
+          "details": [
+            {
+              "text": "Torneo por pares (4 vs 25), (11 vs 14)"
+            },
+            {
+              "template": "Cruce tras bit {point} · mutación p = {p:.2f}",
+              "values": {
+                "point": "stages.crossover.inputs.point",
+                "p": "stages.mutation.inputs.probability"
+              }
+            }
+          ]
+        },
+        {
+          "role": "output",
+          "title": "Reemplazo y salida",
+          "details": [
+            {
+              "text": "2 élites + 2 hijos mutados"
+            },
+            {
+              "text": "Salida: lote con mayor aptitud"
+            }
+          ]
+        }
+      ],
+      "result_selectors": [
+        {
+          "label": "Días evaluados (n)",
+          "selector": "stages.preprocess.outputs.observations",
+          "format": "{:.0f}"
+        },
+        {
+          "label": "Semilla de mutación",
+          "selector": "stages.mutation.inputs.seed",
+          "format": "{}"
+        },
+        {
+          "label": "Mejor lote inicial",
+          "selector": "stages.comparison.inputs.initial_best",
+          "format": "{:.0f} docenas"
+        }
+      ],
+      "duration_seconds": 35,
+      "citations": [
+        "UCI Online Retail"
+      ],
+      "narration_es": "Cada individuo es un lote entre cero y treinta y uno docenas, codificado con cinco bits; la población inicial es cuatro, once, catorce y veinticinco. La aptitud compara cada lote con los trescientos cinco días observados: menor error absoluto medio significa mayor aptitud. Uso torneo por pares, cruce de un punto tras el tercer bit y mutación por bit con probabilidad cero coma cero cinco y semilla fija."
+    },
+    {
+      "id": "ga-process",
+      "section": "genetic",
+      "layout": "process",
+      "title": "GA — Primera generación paso a paso",
+      "intro_es": "Los cálculos de una generación responden la pregunta del examen: ¿mejoró la solución inicial?",
+      "steps": [
+        {
+          "title": "1 · Evaluar x = [4, 11, 14, 25]",
+          "details": [
+            {
+              "template": "f = [{a:.3f}, {b:.3f}, {c:.3f}, {d:.3f}]",
+              "values": {
+                "a": "stages.initial-fitness.outputs.individuals.0.fitness",
+                "b": "stages.initial-fitness.outputs.individuals.1.fitness",
+                "c": "stages.initial-fitness.outputs.individuals.2.fitness",
+                "d": "stages.initial-fitness.outputs.individuals.3.fitness"
+              }
+            }
+          ]
+        },
+        {
+          "title": "2 · Seleccionar por torneo",
+          "details": [
+            {
+              "template": "(4 vs 25) → {a} · (11 vs 14) → {b}",
+              "values": {
+                "a": "stages.selection.outputs.selected.0",
+                "b": "stages.selection.outputs.selected.1"
+              }
+            }
+          ]
+        },
+        {
+          "title": "3 · Cruzar tras el bit 3",
+          "details": [
+            {
+              "template": "{p1} × {p2} → {c1} = {v1} · {c2} = {v2}",
+              "values": {
+                "p1": "stages.encode-decode.outputs.population.0.bits",
+                "p2": "stages.encode-decode.outputs.population.1.bits",
+                "c1": "stages.crossover.outputs.bits.0",
+                "v1": "stages.crossover.outputs.children.0",
+                "c2": "stages.crossover.outputs.bits.1",
+                "v2": "stages.crossover.outputs.children.1"
+              }
+            }
+          ]
+        },
+        {
+          "title": "4 · Mutar (p = 0.05)",
+          "details": [
+            {
+              "template": "máscaras {m1}, {m2} → hijos {a}, {b}",
+              "values": {
+                "m1": "stages.mutation.outputs.masks.0",
+                "m2": "stages.mutation.outputs.masks.1",
+                "a": "stages.mutation.outputs.mutated_children.0",
+                "b": "stages.mutation.outputs.mutated_children.1"
+              }
+            }
+          ]
+        },
+        {
+          "title": "5 · Reemplazar con 2 élites",
+          "details": [
+            {
+              "template": "[4, 11, 7, 9] · f(7) = 1/(1 + {mae:.3f}) = {fit:.3f}",
+              "values": {
+                "mae": "stages.replacement.outputs.individuals.2.mae",
+                "fit": "stages.replacement.outputs.individuals.2.fitness"
+              }
+            }
+          ]
+        }
+      ],
+      "result_selectors": [
+        {
+          "label": "Mejor solución",
+          "template": "{a} → {b} docenas",
+          "values": {
+            "a": "stages.comparison.inputs.initial_best",
+            "b": "stages.comparison.inputs.final_best"
+          }
+        },
+        {
+          "label": "Mejora de aptitud",
+          "selector": "stages.comparison.outputs.improvement_percent",
+          "format": "+{:.2f}%"
+        },
+        {
+          "label": "¿Mejor que la inicial?",
+          "template": "Sí: {b:.3f} > {a:.3f}",
+          "values": {
+            "a": "stages.comparison.outputs.initial_best_fitness",
+            "b": "stages.comparison.outputs.final_best_fitness"
+          }
+        }
+      ],
+      "artifact_purpose": "comparación de generaciones",
+      "duration_seconds": 55,
+      "citations": [
+        "UCI Online Retail"
+      ],
+      "narration_es": "Primero evalúo la población: cuatro docenas tiene la mayor aptitud, cero coma ciento cincuenta. En los torneos gana cuatro frente a veinticinco y once frente a catorce. Los padres se cortan después del tercer bit y producen siete y ocho. Con la semilla fija, la mutación cambia solo el último bit del segundo hijo, que pasa a nueve. Reemplazo conservando los dos padres élite y agrego los hijos. Respondiendo al examen: sí, la nueva generación mejora, porque siete docenas alcanza aptitud cero coma ciento sesenta y cuatro, un nueve coma dos por ciento más que la mejor inicial."
+    },
+    {
+      "id": "ga-code",
+      "section": "genetic",
+      "layout": "code",
+      "title": "GA — Implementación en Python",
+      "intro_es": "Fragmentos reales del código: cada línea marcada implementa un paso de la teoría.",
+      "code": {
+        "source": "src/genetic_algorithm.py",
+        "caption": "src/genetic_algorithm.py · DemandProblem y GeneticAlgorithm.run_generation",
+        "lines": [
+          "def mae(self, value: int) -> float:",
+          "    self.validate(value)",
+          "    return float(np.mean(np.abs(self.demands - value)))",
+          "def fitness(self, value: int) -> float:",
+          "    return 1.0 / (1.0 + self.mae(value))",
+          "…",
+          "selected = [self._winner(pair) for pair in self.tournament_pairs]",
+          "left, right = (Individual.from_value(value).bits",
+          "               for value in selected)",
+          "crossed = [",
+          "    Individual(left[: self.crossover_point]",
+          "               + right[self.crossover_point :]).decode(),",
+          "…",
+          "mask = rng.random(len(bits)) < self.mutation_probability",
+          "…",
+          "elites = ranked[: self.elite_count]",
+          "new_population = elites + mutated"
+        ],
+        "markers": {
+          "2": "1",
+          "4": "1",
+          "6": "2",
+          "10": "3",
+          "13": "4",
+          "16": "5"
+        }
+      },
+      "callouts": [
+        {
+          "marker": "1",
+          "text": "Aptitud: f(x) = 1 / (1 + MAE)"
+        },
+        {
+          "marker": "2",
+          "text": "Torneo: gana el par de mayor aptitud"
+        },
+        {
+          "marker": "3",
+          "text": "Cruce: cabeza de un padre + cola del otro"
+        },
+        {
+          "marker": "4",
+          "text": "Mutación: el bit cambia si u < 0.05"
+        },
+        {
+          "marker": "5",
+          "text": "Elitismo: 2 mejores padres + 2 hijos"
+        }
+      ],
+      "code_objects": [
+        "DemandProblem",
+        "Individual",
+        "GeneticAlgorithm"
+      ],
+      "duration_seconds": 60,
+      "citations": [
+        "UCI Online Retail"
+      ],
+      "narration_es": "Así se ve la teoría en el código. DemandProblem calcula el error absoluto medio con NumPy sobre todas las demandas y lo convierte en aptitud con la fórmula anterior. En GeneticAlgorithm, la selección aplica el torneo a cada par y conserva al ganador. Para cruzar, cada padre se convierte a su cadena de cinco bits y se une la cabeza de uno con la cola del otro en el punto de corte. La mutación genera un número aleatorio por bit y lo invierte cuando es menor que cero coma cero cinco. Finalmente, la nueva población une los dos élites con los hijos mutados. Todo queda en una traza, de donde salen los números de esta presentación."
+    },
+    {
+      "id": "fuzzy-overview",
+      "section": "fuzzy",
+      "layout": "overview",
+      "title": "P2 · Lógica difusa Mamdani — Panorama",
+      "intro_es": "Convertimos una temperatura real de Lima en una velocidad de ventilador mediante reglas lingüísticas.",
+      "family": {
+        "title": "Tipo de técnica",
+        "details": [
+          {
+            "text": "Sistema de inferencia difusa Mamdani."
+          },
+          {
+            "text": "Reglas SI–ENTONCES sobre conjuntos con pertenencia parcial."
+          }
+        ]
+      },
+      "dataset": {
+        "title": "Dataset",
+        "details": [
+          {
+            "text": "NASA POWER · temperatura T2M diaria 2024"
+          },
+          {
+            "template": "Lima (UNMSM) · {n:.0f} observaciones",
+            "values": {
+              "n": "stages.preprocess.inputs.observations"
+            }
+          },
+          {
+            "template": "Día evaluado {date}: {t:.2f} °C",
+            "values": {
+              "date": "stages.preprocess.outputs.selected_date",
+              "t": "stages.preprocess.outputs.temperature_c"
+            }
+          }
+        ]
+      },
+      "pipeline": [
+        "Fusificar",
+        "Reglas",
+        "Mínimo",
+        "Máximo",
+        "Centroide"
+      ],
+      "exam_rows": [
+        {
+          "label": "Temperatura",
+          "mapping": 0
+        },
+        {
+          "label": "Universo de T",
+          "mapping": 1
+        },
+        {
+          "label": "Salida y reglas",
+          "mapping": 3
+        }
+      ],
+      "limitation_selector": "limitations.0",
+      "duration_seconds": 30,
+      "citations": [
+        "NASA POWER Daily API",
+        "NASA POWER Referencing"
+      ],
+      "narration_es": "La segunda pregunta es un sistema de inferencia difusa Mamdani: reglas si–entonces sobre conjuntos donde un valor pertenece parcialmente a varias categorías. El flujo es fusificar, evaluar reglas, implicar con mínimo, agregar con máximo y defusificar con el centroide. En vez de veintiocho grados, uso la temperatura media real del catorce de mayo de 2024 en Lima, de NASA POWER: diecinueve coma cuatro grados."
+    },
+    {
+      "id": "fuzzy-data",
+      "section": "fuzzy",
+      "layout": "contract",
+      "title": "Mamdani — Conjuntos y reglas",
+      "intro_es": "Los conjuntos de temperatura salen de los cuartiles anuales; la salida y las reglas son las del examen.",
+      "blocks": [
+        {
+          "role": "problem",
+          "title": "T baja · trapecio",
+          "details": [
+            {
+              "template": "({a:.2f}, {b:.2f}, {c:.2f}, {d:.2f})",
+              "values": {
+                "a": "stages.memberships.outputs.input_sets.low.points.0",
+                "b": "stages.memberships.outputs.input_sets.low.points.1",
+                "c": "stages.memberships.outputs.input_sets.low.points.2",
+                "d": "stages.memberships.outputs.input_sets.low.points.3"
+              }
+            }
+          ]
+        },
+        {
+          "role": "inputs",
+          "title": "T media · triángulo",
+          "details": [
+            {
+              "template": "({a:.2f}, {b:.2f}, {c:.2f})",
+              "values": {
+                "a": "stages.memberships.outputs.input_sets.medium.points.0",
+                "b": "stages.memberships.outputs.input_sets.medium.points.1",
+                "c": "stages.memberships.outputs.input_sets.medium.points.2"
+              }
+            }
+          ]
+        },
+        {
+          "role": "model",
+          "title": "T alta · trapecio",
+          "details": [
+            {
+              "template": "({a:.2f}, {b:.2f}, {c:.2f}, {d:.2f})",
+              "values": {
+                "a": "stages.memberships.outputs.input_sets.high.points.0",
+                "b": "stages.memberships.outputs.input_sets.high.points.1",
+                "c": "stages.memberships.outputs.input_sets.high.points.2",
+                "d": "stages.memberships.outputs.input_sets.high.points.3"
+              }
+            }
+          ]
+        },
+        {
+          "role": "parameters",
+          "title": "Salida V (%) · triángulos",
+          "details": [
+            {
+              "text": "lenta (0,20,40) · mod. (30,50,70)"
+            },
+            {
+              "text": "rápida (60,80,100)"
+            }
+          ]
+        },
+        {
+          "role": "output",
+          "title": "Reglas",
+          "details": [
+            {
+              "text": "baja→lenta · media→moderada"
+            },
+            {
+              "text": "alta→rápida"
+            }
+          ]
+        }
+      ],
+      "result_selectors": [
+        {
+          "label": "Mín · Q1 · mediana · Q3 · máx (°C)",
+          "template": "{a:.1f} · {b:.1f} · {c:.1f} · {d:.1f} · {e:.1f}",
+          "values": {
+            "a": "stages.preprocess.outputs.min_q1_median_q3_max_c.0",
+            "b": "stages.preprocess.outputs.min_q1_median_q3_max_c.1",
+            "c": "stages.preprocess.outputs.min_q1_median_q3_max_c.2",
+            "d": "stages.preprocess.outputs.min_q1_median_q3_max_c.3",
+            "e": "stages.preprocess.outputs.min_q1_median_q3_max_c.4"
+          },
+          "weight": 2
+        },
+        {
+          "label": "Entrada T",
+          "selector": "stages.preprocess.outputs.temperature_c",
+          "format": "{:.2f} °C"
+        }
+      ],
+      "artifact_purpose": "funciones de membresía",
+      "duration_seconds": 35,
+      "citations": [
+        "NASA POWER Daily API"
+      ],
+      "narration_es": "Como la temperatura de Lima en 2024 solo varió entre dieciséis y veintidós grados, los conjuntos fijos del examen no tendrían sentido. Construyo los de entrada con el mínimo, los cuartiles y el máximo anuales: baja y alta son trapecios en los extremos y media es un triángulo centrado en la mediana. La salida conserva los tres triángulos del examen, lenta, moderada y rápida, y sus tres reglas."
+    },
+    {
+      "id": "fuzzy-process",
+      "section": "fuzzy",
+      "layout": "process",
+      "title": "Mamdani — Inferencia paso a paso",
+      "intro_es": "Los grados de pertenencia activan reglas que se recortan, combinan y defusifican en un valor nítido.",
+      "steps": [
+        {
+          "title": "1 · Fusificar T = 19.40 °C",
+          "details": [
+            {
+              "template": "μ_media = ({c:.2f}−19.40)/({c:.2f}−{b:.2f}) = {m:.3f}",
+              "values": {
+                "b": "stages.memberships.outputs.input_sets.medium.points.1",
+                "c": "stages.memberships.outputs.input_sets.medium.points.2",
+                "m": "stages.fuzzification.outputs.memberships.medium"
+              }
+            }
+          ]
+        },
+        {
+          "title": "2 · Evaluar reglas",
+          "details": [
+            {
+              "template": "α(media→moderada) = {m:.3f} · α(alta→rápida) = {h:.3f}",
+              "values": {
+                "m": "stages.rule-evaluation.outputs.activations.medium->moderate",
+                "h": "stages.rule-evaluation.outputs.activations.high->fast"
+              }
+            }
+          ]
+        },
+        {
+          "title": "3 · Implicar (mínimo)",
+          "details": [
+            {
+              "text": "μ'_B(v) = min(α, μ_B(v)) → recorta cada salida"
+            }
+          ]
+        },
+        {
+          "title": "4 · Agregar (máximo)",
+          "details": [
+            {
+              "text": "μ_A(v) = max(μ'_moderada(v), μ'_rápida(v))"
+            }
+          ]
+        },
+        {
+          "title": "5 · Defusificar (centroide)",
+          "details": [
+            {
+              "template": "v* = Σv·μ_A / Σμ_A = {n:.1f} / {d:.1f} = {v:.2f}%",
+              "values": {
+                "n": "stages.centroid.outputs.numerator",
+                "d": "stages.centroid.outputs.denominator",
+                "v": "stages.centroid.outputs.crisp_percent"
+              }
+            }
+          ]
+        }
+      ],
+      "result_selectors": [
+        {
+          "label": "μ media · μ alta",
+          "template": "{m:.3f} · {h:.3f}",
+          "values": {
+            "m": "stages.fuzzification.outputs.memberships.medium",
+            "h": "stages.fuzzification.outputs.memberships.high"
+          }
+        },
+        {
+          "label": "Velocidad nítida",
+          "selector": "summary.primary_value",
+          "format": "{:.2f}%"
+        },
+        {
+          "label": "Interpretación",
+          "selector": "stages.interpretation.outputs.command",
+          "format": "{}"
+        }
+      ],
+      "artifact_purpose": "agregación y centroide",
+      "duration_seconds": 55,
+      "citations": [
+        "NASA POWER Daily API"
+      ],
+      "narration_es": "Fusifico diecinueve coma cuatro grados. La pertenencia a baja es cero. Para media uso la pendiente derecha del triángulo: veinte coma cero nueve menos diecinueve coma cuatro, entre veinte coma cero nueve menos dieciocho coma sesenta y ocho, que da cero coma cuarenta y nueve; alta recibe cero coma cincuenta y uno. Esos grados son la fuerza de las reglas media–moderada y alta–rápida. Con el mínimo recorto cada triángulo de salida y con el máximo los uno en una sola región. Su centroide da sesenta y cinco coma dos por ciento: ventilación media-alta."
+    },
+    {
+      "id": "fuzzy-code",
+      "section": "fuzzy",
+      "layout": "code",
+      "title": "Mamdani — Implementación en Python",
+      "intro_es": "El método infer del controlador ejecuta las cuatro etapas de Mamdani sobre una malla de 0 a 100%.",
+      "code": {
+        "source": "src/fuzzy_logic.py",
+        "caption": "src/fuzzy_logic.py · MamdaniController.infer",
+        "lines": [
+          "memberships = self.input_variable.memberships(input_value)",
+          "universe = np.arange(0.0, 100.0 + self.step / 2, self.step)",
+          "implicated: dict[str, np.ndarray] = {}",
+          "…",
+          "for rule in self.rules:",
+          "    strength = memberships[rule.antecedent]",
+          "    …",
+          "    consequent = np.asarray(self.output_variable",
+          "        .sets[rule.consequent].evaluate(universe))",
+          "    implicated[rule.consequent] = np.minimum(strength, consequent)",
+          "aggregated = np.maximum.reduce(list(implicated.values()))",
+          "denominator = float(np.sum(aggregated))",
+          "…",
+          "numerator = float(np.sum(universe * aggregated))",
+          "crisp = numerator / denominator"
+        ],
+        "markers": {
+          "0": "1",
+          "5": "2",
+          "9": "3",
+          "10": "4",
+          "14": "5"
+        }
+      },
+      "callouts": [
+        {
+          "marker": "1",
+          "text": "Fusificar: μ de T en cada conjunto"
+        },
+        {
+          "marker": "2",
+          "text": "Fuerza de la regla: α = μ(antecedente)"
+        },
+        {
+          "marker": "3",
+          "text": "Implicación: min(α, μ_B(v)) en toda la malla"
+        },
+        {
+          "marker": "4",
+          "text": "Agregación: máximo punto a punto"
+        },
+        {
+          "marker": "5",
+          "text": "Centroide: Σv·μ / Σμ"
+        }
+      ],
+      "code_objects": [
+        "FuzzyVariable",
+        "MembershipFunction",
+        "MamdaniRule",
+        "MamdaniController"
+      ],
+      "duration_seconds": 60,
+      "citations": [
+        "NASA POWER Daily API"
+      ],
+      "narration_es": "Todo el procedimiento Mamdani está en el método infer de MamdaniController. Primero, la variable de entrada calcula la pertenencia de la temperatura a cada conjunto, con la clase MembershipFunction que evalúa triángulos y trapecios. Luego defino la malla de salida, de cero a cien por ciento con paso de cero coma cero uno. Para cada regla, la fuerza es la pertenencia de su antecedente, y con np.minimum recorto toda la función del consecuente a esa altura: es la implicación por mínimo. np.maximum.reduce combina los conjuntos recortados, que es la agregación por máximo. Finalmente, el centroide discreto divide la suma de v por mu entre la suma de mu, después de validar que el denominador no sea cero. Cada valor intermedio queda registrado en una traza."
+    },
+    {
+      "id": "mlp-overview",
+      "section": "mlp",
+      "layout": "overview",
+      "title": "P3 · Red neuronal multicapa — Panorama",
+      "intro_es": "Estimamos la probabilidad de que un estudiante real apruebe a partir de sus dos notas previas.",
+      "family": {
+        "title": "Tipo de técnica",
+        "details": [
+          {
+            "text": "Red feedforward 2-2-1 · aprendizaje supervisado."
+          },
+          {
+            "text": "Clasificación binaria con sigmoide y BCE."
+          }
+        ]
+      },
+      "dataset": {
+        "title": "Dataset",
+        "details": [
+          {
+            "text": "UCI Student Performance (Matemática)"
+          },
+          {
+            "template": "{n:.0f} estudiantes · split {tr:.0f} / {te:.0f} estratificado",
+            "values": {
+              "n": "stages.preprocess-split.inputs.rows",
+              "tr": "stages.preprocess-split.outputs.train_rows",
+              "te": "stages.preprocess-split.outputs.test_rows"
+            }
+          },
+          {
+            "text": "x = (G1, G2)/20 · y = 1 si G3 ≥ 10"
+          }
+        ]
+      },
+      "pipeline": [
+        "x = (G1, G2)",
+        "Oculta 2 · σ",
+        "Salida 1 · σ",
+        "Pérdida BCE",
+        "Backprop"
+      ],
+      "exam_rows": [
+        {
+          "label": "Entrada x₁",
+          "mapping": 0
+        },
+        {
+          "label": "Entrada x₂",
+          "mapping": 1
+        },
+        {
+          "label": "Clase esperada",
+          "mapping": 2
+        }
+      ],
+      "limitation_selector": "limitations.1",
+      "duration_seconds": 30,
+      "citations": [
+        "UCI Student Performance",
+        "DOI 10.24432/C5TG7T"
+      ],
+      "narration_es": "La tercera pregunta es una red neuronal feedforward dos-dos-uno: dos entradas, dos neuronas ocultas y una salida, todas con sigmoide. Es aprendizaje supervisado para clasificación binaria. En lugar de asistencia y actividades sintéticas, uso Student Performance de UCI: las notas G1 y G2 entre veinte son las entradas, y la clase vale uno si la nota final G3 aprueba. G3 nunca entra a la red."
+    },
+    {
+      "id": "mlp-data",
+      "section": "mlp",
+      "layout": "contract",
+      "title": "MLP — Componentes e inicialización",
+      "intro_es": "La muestra, los pesos iniciales y la tasa de aprendizaje quedan declarados para reproducir el cálculo.",
+      "blocks": [
+        {
+          "role": "problem",
+          "title": "Muestra real",
+          "details": [
+            {
+              "template": "Fila {r}: G1 = {g1}, G2 = {g2}",
+              "values": {
+                "r": "stages.sample-normalization.inputs.source_row",
+                "g1": "stages.sample-normalization.inputs.G1",
+                "g2": "stages.sample-normalization.inputs.G2"
+              }
+            },
+            {
+              "template": "G3 = {g3} → y = {y:.0f}",
+              "values": {
+                "g3": "stages.sample-normalization.inputs.G3",
+                "y": "stages.sample-normalization.outputs.y"
+              }
+            }
+          ]
+        },
+        {
+          "role": "inputs",
+          "title": "Normalización",
+          "details": [
+            {
+              "template": "x = ({x1:.2f}, {x2:.2f})",
+              "values": {
+                "x1": "stages.sample-normalization.outputs.x.0",
+                "x2": "stages.sample-normalization.outputs.x.1"
+              }
+            },
+            {
+              "text": "xᵢ = Gᵢ / 20"
+            }
+          ]
+        },
+        {
+          "role": "model",
+          "title": "Capa oculta",
+          "details": [
+            {
+              "template": "W¹ = {w}",
+              "values": {
+                "w": "stages.initialization.outputs.input_hidden_weights"
+              }
+            },
+            {
+              "template": "b¹ = {b}",
+              "values": {
+                "b": "stages.initialization.outputs.hidden_biases"
+              }
+            }
+          ]
+        },
+        {
+          "role": "parameters",
+          "title": "Capa de salida",
+          "details": [
+            {
+              "template": "w² = {w} · b² = {b}",
+              "values": {
+                "w": "stages.initialization.outputs.hidden_output_weights",
+                "b": "stages.initialization.outputs.output_bias"
+              }
+            },
+            {
+              "template": "η = {eta}",
+              "values": {
+                "eta": "stages.update.inputs.learning_rate"
+              }
+            }
+          ]
+        },
+        {
+          "role": "output",
+          "title": "Activación y pérdida",
+          "details": [
+            {
+              "text": "σ(z) = 1 / (1 + e⁻ᶻ)"
+            },
+            {
+              "text": "BCE = −[y ln ŷ + (1−y) ln(1−ŷ)]"
+            }
+          ]
+        }
+      ],
+      "result_selectors": [
+        {
+          "label": "Entrenamiento",
+          "selector": "stages.preprocess-split.outputs.train_rows",
+          "format": "{:.0f} filas"
+        },
+        {
+          "label": "Prueba",
+          "selector": "stages.preprocess-split.outputs.test_rows",
+          "format": "{:.0f} filas"
+        },
+        {
+          "label": "Arquitectura",
+          "template": "{a[0]}-{a[1]}-{a[2]}",
+          "values": {
+            "a": "stages.initialization.inputs.architecture"
+          }
+        }
+      ],
+      "duration_seconds": 35,
+      "citations": [
+        "UCI Student Performance"
+      ],
+      "narration_es": "Tras una partición estratificada con semilla fija, tomo un estudiante con G1 igual a quince y G2 igual a catorce; como G3 es quince, la clase esperada es uno. Al dividir entre veinte obtengo cero coma setenta y cinco y cero coma setenta. Como el examen no fija los pesos, declaro pesos y sesgos pequeños y deterministas, y conservo la tasa de cero coma dos, la sigmoide y la entropía cruzada binaria."
+    },
+    {
+      "id": "mlp-process",
+      "section": "mlp",
+      "layout": "process",
+      "title": "MLP — Una iteración paso a paso",
+      "intro_es": "Propagación, error, retropropagación y actualización con los valores de la muestra.",
+      "steps": [
+        {
+          "title": "1 · Capa oculta",
+          "details": [
+            {
+              "template": "z¹ = W¹x + b¹ = [{z1:.3f}, {z2:.3f}] → a¹ = [{a1:.3f}, {a2:.3f}]",
+              "values": {
+                "z1": "stages.forward.outputs.hidden_z.0",
+                "z2": "stages.forward.outputs.hidden_z.1",
+                "a1": "stages.forward.outputs.hidden_activation.0",
+                "a2": "stages.forward.outputs.hidden_activation.1"
+              }
+            }
+          ]
+        },
+        {
+          "title": "2 · Salida y pérdida",
+          "details": [
+            {
+              "template": "z² = {z:.3f} · ŷ = σ(z²) = {p:.3f} · BCE = {l:.3f}",
+              "values": {
+                "z": "stages.forward.outputs.output_z",
+                "p": "stages.forward.outputs.prediction",
+                "l": "stages.loss.outputs.binary_cross_entropy"
+              }
+            }
+          ]
+        },
+        {
+          "title": "3 · Retropropagar",
+          "details": [
+            {
+              "template": "δ² = ŷ − y = {d:.3f} · δ¹ = [{h1:.3f}, {h2:.3f}]",
+              "values": {
+                "d": "stages.backward.outputs.output_delta",
+                "h1": "stages.backward.outputs.hidden_delta.0",
+                "h2": "stages.backward.outputs.hidden_delta.1"
+              }
+            }
+          ]
+        },
+        {
+          "title": "4 · Actualizar θ ← θ − η∇θ",
+          "details": [
+            {
+              "template": "w²₁ = 0.3 − 0.2·({g:.3f}) = {w:.3f}",
+              "values": {
+                "g": "stages.backward.outputs.output_weight_gradients.0",
+                "w": "stages.update.outputs.parameters_after.hidden_output_weights.0"
+              }
+            }
+          ]
+        },
+        {
+          "title": "5 · Verificar (2.º forward)",
+          "details": [
+            {
+              "template": "ŷ: {a:.3f} → {b:.3f} · BCE: {c:.3f} → {d:.3f}",
+              "values": {
+                "a": "stages.post-update-forward.outputs.prediction_before",
+                "b": "stages.post-update-forward.outputs.prediction_after",
+                "c": "stages.post-update-forward.outputs.loss_before",
+                "d": "stages.post-update-forward.outputs.loss_after"
+              }
+            }
+          ]
+        }
+      ],
+      "result_selectors": [
+        {
+          "label": "Predicción ŷ",
+          "template": "{a:.3f} → {b:.3f}",
+          "values": {
+            "a": "stages.post-update-forward.outputs.prediction_before",
+            "b": "stages.post-update-forward.outputs.prediction_after"
+          }
+        },
+        {
+          "label": "Pérdida BCE",
+          "template": "{a:.3f} → {b:.3f}",
+          "values": {
+            "a": "stages.post-update-forward.outputs.loss_before",
+            "b": "stages.post-update-forward.outputs.loss_after"
+          }
+        }
+      ],
+      "artifact_purpose": "red y cambio de predicción",
+      "duration_seconds": 55,
+      "citations": [
+        "UCI Student Performance"
+      ],
+      "narration_es": "En la capa oculta calculo z uno igual a W por x más b: cero coma trescientos quince y menos cero coma ciento cinco; la sigmoide da cero coma cincuenta y ocho y cero coma cuarenta y siete. La salida produce una probabilidad de cero coma quinientos treinta y dos, con pérdida de cero coma sesenta y tres. Al combinar sigmoide y entropía cruzada, el delta de salida es predicción menos objetivo; ese error llega a la capa oculta a través de los pesos. Resto tasa por gradiente a cada parámetro y repito el forward: la probabilidad sube a cero coma quinientos sesenta y nueve y la pérdida baja."
+    },
+    {
+      "id": "mlp-code",
+      "section": "mlp",
+      "layout": "code",
+      "title": "MLP — Implementación en Python",
+      "intro_es": "Las capas y la sigmoide son objetos; train_one encadena forward, gradientes y actualización.",
+      "code": {
+        "source": "src/mlp.py",
+        "caption": "src/mlp.py · MLP221.predict_with_trace y MLP221.train_one",
+        "lines": [
+          "hidden_z = self.hidden.forward(inputs)",
+          "hidden_a = Sigmoid.forward(hidden_z)",
+          "output_z = float(self.output.forward(hidden_a)[0])",
+          "prediction = float(Sigmoid.forward(np.asarray(output_z)))",
+          "…",
+          "loss = BinaryCrossEntropy.value(prediction, target)",
+          "output_delta = prediction - target",
+          "gradient_output_w = output_delta * hidden_a",
+          "gradient_output_b = output_delta",
+          "hidden_delta = (self.output.weights[0] * output_delta) \\",
+          "    * Sigmoid.derivative_from_output(hidden_a)",
+          "gradient_hidden_w = np.outer(hidden_delta, inputs)",
+          "…",
+          "self.output.weights -= learning_rate \\",
+          "    * gradient_output_w.reshape(1, 2)",
+          "…",
+          "self.hidden.weights -= learning_rate * gradient_hidden_w"
+        ],
+        "markers": {
+          "0": "1",
+          "5": "2",
+          "6": "3",
+          "9": "4",
+          "13": "5",
+          "16": "5"
+        }
+      },
+      "callouts": [
+        {
+          "marker": "1",
+          "text": "Forward: z = Wx + b, a = σ(z)"
+        },
+        {
+          "marker": "2",
+          "text": "Pérdida: entropía cruzada binaria"
+        },
+        {
+          "marker": "3",
+          "text": "δ² = ŷ − y (sigmoide + BCE)"
+        },
+        {
+          "marker": "4",
+          "text": "δ¹ = (w² δ²) ⊙ a¹(1 − a¹)"
+        },
+        {
+          "marker": "5",
+          "text": "Descenso de gradiente: θ ← θ − η∇θ"
+        }
+      ],
+      "code_objects": [
+        "DenseLayer",
+        "Sigmoid",
+        "BinaryCrossEntropy",
+        "MLP221"
+      ],
+      "duration_seconds": 60,
+      "citations": [
+        "UCI Student Performance"
+      ],
+      "narration_es": "En el código, cada capa es un objeto DenseLayer que calcula W por x más b, y la clase Sigmoid aplica la activación. predict_with_trace encadena capa oculta, sigmoide, capa de salida y sigmoide, exactamente como el forward anterior. En train_one, BinaryCrossEntropy mide la pérdida; el delta de salida es predicción menos objetivo, y el gradiente de salida es ese delta por las activaciones ocultas. El delta oculto multiplica el error por los pesos y por la derivada de la sigmoide, a por uno menos a, y np.outer forma los gradientes de la primera capa. Por último, cada matriz de pesos resta la tasa de aprendizaje por su gradiente. Un segundo forward con los pesos nuevos confirma que la pérdida baja."
+    }
+  ]
+}

@@ -1,0 +1,336 @@
+{
+  "artifacts": [
+    {
+      "media_type": "image/png",
+      "path": "generation_comparison.png",
+      "purpose": "comparación de generaciones",
+      "sha256": "9e497261c7d1cb3cdecf40af939524adeb0d7b53094ef808c84d4993d38d7ceb"
+    },
+    {
+      "media_type": "text/csv",
+      "path": "generation_table.csv",
+      "purpose": "tabla auditable de aptitud",
+      "sha256": "11dbde35a99207363bf0e89a708f7036e88d926bef6dcbd06ce14afc8e286e26"
+    }
+  ],
+  "citations": [
+    {
+      "label": "UCI Online Retail",
+      "license": "CC BY 4.0",
+      "url": "https://archive.ics.uci.edu/dataset/352/online+retail"
+    },
+    {
+      "label": "DOI 10.24432/C5BW33",
+      "license": "CC BY 4.0",
+      "url": "https://doi.org/10.24432/C5BW33"
+    }
+  ],
+  "dataset": {
+    "dataset_id": "uci-online-retail-85123a-daily-v1",
+    "metadata_path": "midterm/data/metadata/genetic.json",
+    "snapshot_sha256": "c369623deb64ee48ceb5e2ae2ebcae9ea475e41b6d627e0b6c5a380b5ada4d79"
+  },
+  "execution": {
+    "command": "run_exercise(data, metadata, config, output_dir, seed)",
+    "config_sha256": "9e6770d6c91f642af47ab74520c6dde150382f1a42ef6d9bdf27dd693df0b83d",
+    "input_sha256": "c369623deb64ee48ceb5e2ae2ebcae9ea475e41b6d627e0b6c5a380b5ada4d79",
+    "seed": 1
+  },
+  "limitations": [
+    "La demanda se aproxima con ventas observadas y puede incluir faltantes de inventario.",
+    "El recorte y la conversión a docenas son decisiones de modelado.",
+    "La función inversa del MAE no representa beneficio contable."
+  ],
+  "pdf_mapping": [
+    {
+      "justification": "Se conserva una decisión entera de producción.",
+      "original_value": "cantidad a producir",
+      "pdf_element": "variable_entera",
+      "replacement": "lote diario en docenas",
+      "treatment": "retained"
+    },
+    {
+      "justification": "El dataset no contiene costos; la cercanía a demanda sí es observable.",
+      "original_value": "x(15-x)",
+      "pdf_element": "funcion_objetivo",
+      "replacement": "1/(1+MAE(x, demanda_real))",
+      "treatment": "replaced"
+    },
+    {
+      "justification": "El máximo de 28 docenas requiere cinco bits.",
+      "original_value": "0–15, 4 bits",
+      "pdf_element": "rango_codificacion",
+      "replacement": "0–31, 5 bits",
+      "treatment": "replaced"
+    },
+    {
+      "justification": "Es compatible con la codificación binaria didáctica.",
+      "original_value": 0.05,
+      "pdf_element": "probabilidad_mutacion",
+      "replacement": 0.05,
+      "treatment": "retained"
+    },
+    {
+      "justification": "Son las etapas evaluadas en el enunciado.",
+      "original_value": "aptitud, selección, cruce, mutación y comparación",
+      "pdf_element": "etapas_primera_generacion",
+      "replacement": "traza completa",
+      "treatment": "retained"
+    }
+  ],
+  "schema_version": "1.0",
+  "stages": [
+    {
+      "code_objects": [
+        "RetailDataset"
+      ],
+      "inputs": {
+        "rows": 305,
+        "stock_code": "85123A"
+      },
+      "operation": "Filtrar ventas válidas, agregar por día, recortar a 331 unidades y convertir con ceil(unidades/12).",
+      "outputs": {
+        "median_dozens": 7.0,
+        "observations": 305
+      },
+      "stage_id": "preprocess",
+      "title_es": "Preparación de demanda"
+    },
+    {
+      "code_objects": [
+        "Individual",
+        "DemandProblem"
+      ],
+      "inputs": {
+        "bits": 5,
+        "bounds": [
+          0,
+          31
+        ]
+      },
+      "operation": "Representar cada lote entero x como cromosoma binario de cinco bits.",
+      "outputs": {
+        "population": [
+          {
+            "bits": "00100",
+            "value": 4
+          },
+          {
+            "bits": "01011",
+            "value": 11
+          },
+          {
+            "bits": "01110",
+            "value": 14
+          },
+          {
+            "bits": "11001",
+            "value": 25
+          }
+        ]
+      },
+      "stage_id": "encode-decode",
+      "title_es": "Codificación binaria"
+    },
+    {
+      "code_objects": [
+        "DemandProblem",
+        "GenerationTrace"
+      ],
+      "inputs": {
+        "population": [
+          4,
+          11,
+          14,
+          25
+        ]
+      },
+      "operation": "Calcular MAE(x)=promedio(|x-d_t|) y fitness=1/(1+MAE).",
+      "outputs": {
+        "individuals": [
+          {
+            "bits": "00100",
+            "fitness": 0.15024630541871922,
+            "mae": 5.655737704918033,
+            "value": 4
+          },
+          {
+            "bits": "01011",
+            "fitness": 0.14048825426070935,
+            "mae": 6.118032786885246,
+            "value": 11
+          },
+          {
+            "bits": "01110",
+            "fitness": 0.11271249076127125,
+            "mae": 7.872131147540983,
+            "value": 14
+          },
+          {
+            "bits": "11001",
+            "fitness": 0.05668091432819179,
+            "mae": 16.64262295081967,
+            "value": 25
+          }
+        ]
+      },
+      "stage_id": "initial-fitness",
+      "title_es": "Aptitud inicial"
+    },
+    {
+      "code_objects": [
+        "GeneticAlgorithm"
+      ],
+      "inputs": {
+        "pairs": [
+          [
+            4,
+            25
+          ],
+          [
+            11,
+            14
+          ]
+        ]
+      },
+      "operation": "Elegir en cada par el individuo con mayor aptitud.",
+      "outputs": {
+        "selected": [
+          4,
+          11
+        ]
+      },
+      "stage_id": "selection",
+      "title_es": "Selección por torneo"
+    },
+    {
+      "code_objects": [
+        "GeneticAlgorithm",
+        "Individual"
+      ],
+      "inputs": {
+        "parents": [
+          4,
+          11
+        ],
+        "point": 3
+      },
+      "operation": "Intercambiar sufijos después del tercer bit.",
+      "outputs": {
+        "bits": [
+          "00111",
+          "01000"
+        ],
+        "children": [
+          7,
+          8
+        ]
+      },
+      "stage_id": "crossover",
+      "title_es": "Cruce de un punto"
+    },
+    {
+      "code_objects": [
+        "GeneticAlgorithm"
+      ],
+      "inputs": {
+        "children": [
+          7,
+          8
+        ],
+        "probability": 0.05,
+        "seed": 1
+      },
+      "operation": "Invertir cada bit cuando el sorteo uniforme es menor que 0.05.",
+      "outputs": {
+        "masks": [
+          "00000",
+          "00001"
+        ],
+        "mutated_children": [
+          7,
+          9
+        ]
+      },
+      "stage_id": "mutation",
+      "title_es": "Mutación"
+    },
+    {
+      "code_objects": [
+        "GeneticAlgorithm",
+        "GenerationTrace"
+      ],
+      "inputs": {
+        "elites": [
+          4,
+          11
+        ],
+        "offspring": [
+          7,
+          9
+        ]
+      },
+      "operation": "Conservar los dos mejores padres e incorporar los dos descendientes.",
+      "outputs": {
+        "individuals": [
+          {
+            "bits": "00100",
+            "fitness": 0.15024630541871922,
+            "mae": 5.655737704918033,
+            "value": 4
+          },
+          {
+            "bits": "01011",
+            "fitness": 0.14048825426070935,
+            "mae": 6.118032786885246,
+            "value": 11
+          },
+          {
+            "bits": "00111",
+            "fitness": 0.164066702528241,
+            "mae": 5.0950819672131145,
+            "value": 7
+          },
+          {
+            "bits": "01001",
+            "fitness": 0.1566512583461736,
+            "mae": 5.383606557377049,
+            "value": 9
+          }
+        ],
+        "new_population": [
+          4,
+          11,
+          7,
+          9
+        ]
+      },
+      "stage_id": "replacement",
+      "title_es": "Reemplazo elitista"
+    },
+    {
+      "code_objects": [
+        "DemandProblem",
+        "GenerationTrace"
+      ],
+      "inputs": {
+        "final_best": 7,
+        "initial_best": 4
+      },
+      "operation": "Comparar la mejor aptitud antes y después de una generación.",
+      "outputs": {
+        "final_best_fitness": 0.164066702528241,
+        "improvement_percent": 9.198493813878429,
+        "initial_best_fitness": 0.15024630541871922
+      },
+      "stage_id": "comparison",
+      "title_es": "Comparación"
+    }
+  ],
+  "summary": {
+    "conclusion_es": "La mejor solución pasa de 4 a 7 docenas y mejora la aptitud 9.20%.",
+    "primary_value": 7,
+    "units": "docenas/día"
+  },
+  "technique": "genetic"
+}

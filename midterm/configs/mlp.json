@@ -1,0 +1,32 @@
+{
+  "config_version": "1.0",
+  "technique": "mlp",
+  "seed": 42,
+  "dataset_metadata": "midterm/data/metadata/mlp.json",
+  "algorithm": {
+    "source_row": 4,
+    "test_ratio": 0.2,
+    "split_seed": 42,
+    "features": ["G1", "G2"],
+    "normalization": {"minimum": 0, "maximum": 20},
+    "target": "G3 >= 10",
+    "architecture": [2, 2, 1],
+    "input_hidden_weights": [[0.10, 0.20], [-0.10, 0.10]],
+    "hidden_biases": [0.10, -0.10],
+    "hidden_output_weights": [0.30, -0.20],
+    "output_bias": 0.05,
+    "activation": "sigmoid",
+    "loss": "binary_cross_entropy",
+    "learning_rate": 0.2,
+    "iterations": 1
+  },
+  "presentation_case": {"source_row": 4, "G1": 15, "G2": 14, "G3": 15},
+  "pdf_mapping": [
+    {"pdf_element": "entrada_asistencia", "original_value": 0.8, "treatment": "replaced", "replacement": "G1/20 = 0.75", "justification": "Se usa la primera nota real normalizada."},
+    {"pdf_element": "entrada_actividades", "original_value": 0.6, "treatment": "replaced", "replacement": "G2/20 = 0.70", "justification": "Se usa la segunda nota real normalizada."},
+    {"pdf_element": "clase_esperada", "original_value": "aprobado", "treatment": "replaced", "replacement": "G3=15 implica y=1", "justification": "La etiqueta se deriva del resultado real sin usarlo como entrada."},
+    {"pdf_element": "arquitectura_y_activacion", "original_value": "2-2-1 con sigmoide", "treatment": "retained", "replacement": "2-2-1 con sigmoide", "justification": "Conserva la estructura solicitada."},
+    {"pdf_element": "tasa_aprendizaje", "original_value": 0.2, "treatment": "retained", "replacement": 0.2, "justification": "Se conserva para la actualización manual."},
+    {"pdf_element": "inicializacion", "original_value": "pesos no completamente especificados", "treatment": "replaced", "replacement": "pesos y sesgos deterministas declarados", "justification": "Permite reproducir propagación y retropropagación."}
+  ]
+}

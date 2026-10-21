@@ -1,0 +1,35 @@
+{
+  "dataset_id": "uci-online-retail-85123a-daily-v1",
+  "technique": "genetic",
+  "title": "Online Retail",
+  "provider": "UCI Machine Learning Repository",
+  "source_url": "https://archive.ics.uci.edu/dataset/352/online+retail",
+  "doi": "10.24432/C5BW33",
+  "license": "CC BY 4.0",
+  "retrieved_on": "2026-10-15",
+  "source_sha256": "f5385cbb54bbebf7196389109c6b0621faab0c304e3702548165e71c84aede8b",
+  "snapshot_path": "midterm/data/derived/online_retail_85123a_daily.csv",
+  "snapshot_sha256": "c369623deb64ee48ceb5e2ae2ebcae9ea475e41b6d627e0b6c5a380b5ada4d79",
+  "schema": {
+    "format": "CSV UTF-8 con cabecera",
+    "columns": {
+      "date": {"type": "date", "units": "YYYY-MM-DD", "nullable": false},
+      "quantity_units": {"type": "integer", "units": "unidades/día", "nullable": false},
+      "capped_units": {"type": "integer", "units": "unidades/día", "nullable": false},
+      "demand_dozens": {"type": "integer", "units": "docenas/día", "nullable": false}
+    }
+  },
+  "transformations": [
+    "Eliminar facturas cuyo InvoiceNo comienza con C.",
+    "Eliminar filas con Quantity <= 0 o UnitPrice <= 0.",
+    "Filtrar StockCode 85123A y agregar Quantity por fecha de negociación.",
+    "Limitar a 331 unidades, percentil 95 empírico con método lower.",
+    "Convertir a docenas mediante ceil(capped_units / 12).",
+    "Excluir CustomerID y toda columna no necesaria."
+  ],
+  "limitations": [
+    "La demanda se aproxima con ventas observadas y puede incluir faltantes de inventario.",
+    "El recorte y la conversión a docenas son decisiones de modelado.",
+    "La función inversa del MAE no representa beneficio contable."
+  ]
+}
