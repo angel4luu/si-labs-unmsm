@@ -15,3 +15,15 @@ Thumbs.db
 specs/
 .claude
 lab11/output/
+lab12/data/
+lab12/.cache/
+lab12/informe/*.aux
+lab12/informe/*.bbl
+lab12/informe/*.bcf
+lab12/informe/*.blg
+lab12/informe/*.fdb_latexmk
+lab12/informe/*.fls
+lab12/informe/*.log
+lab12/informe/*.out
+lab12/informe/*.run.xml
+lab12/informe/*.toc

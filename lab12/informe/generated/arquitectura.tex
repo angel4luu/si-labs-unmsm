@@ -1,0 +1,13 @@
+% Generado por el notebook §3; no editar a mano
+1 & conv1 & Conv2d & 64 & 11$\times$11 / 4 / 2 & 64$\times$55$\times$55 & 23\,296 \\
+1 & pool1 & MaxPool2d & -- & 3$\times$3 / 2 / 0 & 64$\times$27$\times$27 & 0 \\
+2 & conv2 & Conv2d & 192 & 5$\times$5 / 1 / 2 & 192$\times$27$\times$27 & 307\,392 \\
+2 & pool2 & MaxPool2d & -- & 3$\times$3 / 2 / 0 & 192$\times$13$\times$13 & 0 \\
+3 & conv3 & Conv2d & 384 & 3$\times$3 / 1 / 1 & 384$\times$13$\times$13 & 663\,936 \\
+3 & conv4 & Conv2d & 256 & 3$\times$3 / 1 / 1 & 256$\times$13$\times$13 & 884\,992 \\
+3 & conv5 & Conv2d & 256 & 3$\times$3 / 1 / 1 & 256$\times$13$\times$13 & 590\,080 \\
+3 & pool3 & MaxPool2d & -- & 3$\times$3 / 2 / 0 & 256$\times$6$\times$6 & 0 \\
+-- & avgpool & AdaptiveAvgPool2d & -- & adapt. 6$\times$6 & 256$\times$6$\times$6 & 0 \\
+Clasif. & dense1 & Linear & 4096 & -- & 4096 & 37\,752\,832 \\
+Clasif. & dense2 & Linear & 4096 & -- & 4096 & 16\,781\,312 \\
+Clasif. & dense3 & Linear & 1000 & -- & 1000 & 4\,097\,000 \\
