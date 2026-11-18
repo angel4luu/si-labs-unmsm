@@ -16,6 +16,7 @@ specs/
 .claude
 lab11/output/
 lab12/data/
+lab13/data/
 lab12/.cache/
 lab12/informe/*.aux
 lab12/informe/*.bbl
